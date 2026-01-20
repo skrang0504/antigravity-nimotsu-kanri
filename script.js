@@ -212,8 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
             lines.push(`【${title}】`);
             
             let contentParts = [];
-            if (go) contentParts.push(`行き：${go}`);
-            if (ret) contentParts.push(`帰り：${ret}`);
+            if (go) contentParts.push(`行き：${go}号`);
+            if (ret) contentParts.push(`帰り：${ret}号`);
             if (balls) contentParts.push(`${balls}ケ`); 
             
             if (contentParts.length > 0) {
