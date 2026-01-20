@@ -1,3 +1,22 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-database.js";
+
+// TODO: Replace the following with your app's Firebase project configuration
+// See the walkthrough for instructions on how to get this.
+const firebaseConfig = {
+  apiKey: "AIzaSyBVszcR9Of9DbSEQIx9IEGeB-dwIuoONQo",
+  authDomain: "nimotsu-kanri.firebaseapp.com",
+  databaseURL: "https://console.firebase.google.com/project/nimotsu-kanri/database/nimotsu-kanri-default-rtdb/data/~2F?authuser=0",
+  projectId: "nimotsu-kanri",
+  storageBucket: "nimotsu-kanri.firebasestorage.app",
+  messagingSenderId: "666696628005",
+  appId: "1:666696628005:web:4c52db7894a3c34cbb4ccc"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     const calendarElement = document.getElementById('calendar');
     const currentMonthDisplay = document.getElementById('currentMonthDisplay');
@@ -27,13 +46,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let currentDate = new Date();
     let selectedDate = null;
-    let calendarData = JSON.parse(localStorage.getItem('calendarData')) || {};
+    let calendarData = {}; // Initialize empty, will be filled by Firebase
 
     const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
 
     function init() {
-        renderCalendar();
+        // Setup Firebase Listener
+        const dataRef = ref(db, 'calendarData');
+        onValue(dataRef, (snapshot) => {
+            const data = snapshot.val();
+            calendarData = data || {};
+            renderCalendar();
+        });
+
         setupEventListeners();
+        renderCalendar(); // Initial render (empty)
     }
 
     function setupEventListeners() {
@@ -104,8 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let contentHtml = `<span class="day-number">${i}</span>`;
             if (hasData) {
                 contentHtml += `<div class="event-dot"></div>`;
-                // Optional: Show some summary text
-                // contentHtml += `<div class="day-content">登録あり</div>`;
             }
             
             dayDiv.innerHTML = contentHtml;
@@ -148,14 +173,15 @@ document.addEventListener('DOMContentLoaded', () => {
             data[key] = val;
         });
 
+        // Use Firebase set/remove
+        const dateRef = ref(db, 'calendarData/' + dateStr);
+
         if (isEmpty) {
-            delete calendarData[dateStr];
+            remove(dateRef);
         } else {
-            calendarData[dateStr] = data;
+            set(dateRef, data);
         }
 
-        localStorage.setItem('calendarData', JSON.stringify(calendarData));
-        renderCalendar();
         closeModal();
     }
 
@@ -188,16 +214,16 @@ document.addEventListener('DOMContentLoaded', () => {
             let contentParts = [];
             if (go) contentParts.push(`行き：${go}`);
             if (ret) contentParts.push(`帰り：${ret}`);
-            if (balls) contentParts.push(`${balls}個`); // Removed "ボール" text
+            if (balls) contentParts.push(`${balls}個`); 
             
             if (contentParts.length > 0) {
-                lines.push(contentParts.join('　')); // distinct separator
+                lines.push(contentParts.join('　'));
             }
             
             return lines.join('\n');
         };
 
-        // Determine Men's Header (Men & Women if only men data exists)
+        // Determine Men's Header
         const hasMen = currentInputs.mensGo || currentInputs.mensReturn || currentInputs.mensBalls;
         const hasWomen = currentInputs.womensGo || currentInputs.womensReturn || currentInputs.womensBalls;
         
@@ -223,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parts.push(`（いらない荷物：${currentInputs.unnecessaryItems}）`);
         }
 
-        // Join all parts with double newlines for clear separation
+        // Join all parts with single newline (as requested)
         const text = parts.join('\n');
 
         const encodedText = encodeURIComponent(text);
