@@ -6,7 +6,7 @@ import { getDatabase, ref, set, remove, onValue } from "https://www.gstatic.com/
 const firebaseConfig = {
   apiKey: "AIzaSyBVszcR9Of9DbSEQIx9IEGeB-dwIuoONQo",
   authDomain: "nimotsu-kanri.firebaseapp.com",
-  databaseURL: "https://console.firebase.google.com/project/nimotsu-kanri/database/nimotsu-kanri-default-rtdb/data/~2F?authuser=0",
+  databaseURL: "https://nimotsu-kanri-default-rtdb.firebaseio.com",
   projectId: "nimotsu-kanri",
   storageBucket: "nimotsu-kanri.firebasestorage.app",
   messagingSenderId: "666696628005",
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let contentParts = [];
             if (go) contentParts.push(`行き：${go}`);
             if (ret) contentParts.push(`帰り：${ret}`);
-            if (balls) contentParts.push(`${balls}個`); 
+            if (balls) contentParts.push(`${balls}ケ`); 
             
             if (contentParts.length > 0) {
                 lines.push(contentParts.join('　'));
